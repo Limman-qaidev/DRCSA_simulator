@@ -3,11 +3,14 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Iterable, Mapping
 
 import yaml
+
+LOGGER = logging.getLogger(__name__)
 
 
 class PolicyDataValidationError(ValueError):
@@ -45,22 +48,27 @@ class PolicyDataLoader:
 
     def __init__(self, base_path: Path | None = None) -> None:
         self._base_path = base_path or Path(__file__).resolve().parents[2] / "regdata"
+        LOGGER.debug("Policy data loader initialised with base path %s", self._base_path)
 
     def available_policies(self) -> Iterable[str]:
         """Return the list of available policy directories."""
 
         if not self._base_path.exists():
+            LOGGER.warning("Policy dataset base path %s does not exist", self._base_path)
             return []
-        return sorted(
+        policies = sorted(
             entry.name
             for entry in self._base_path.iterdir()
             if entry.is_dir() and not entry.name.startswith(".")
         )
+        LOGGER.debug("Discovered policies: %s", ", ".join(policies) or "<none>")
+        return policies
 
     def load(self, policy_name: str) -> PolicyData:
         """Load and validate regulatory datasets for a policy."""
 
         policy_path = self._base_path / policy_name
+        LOGGER.info("Loading policy datasets for %s", policy_name)
         if not policy_path.is_dir():
             raise PolicyDataValidationError(
                 f"Policy directory '{policy_name}' not found under {self._base_path}"
@@ -75,8 +83,19 @@ class PolicyDataLoader:
             validator = getattr(self, f"_validate_{table_name}")
             data[table_name] = validator(payload)
             hashes[table_name] = self._compute_hash(payload)
+            LOGGER.debug(
+                "Loaded %s table for %s (hash=%s)",
+                table_name,
+                policy_name,
+                hashes[table_name],
+            )
 
         hashes["policy"] = self._compute_hash({key: data[key] for key in sorted(data)})
+        LOGGER.info(
+            "Policy %s loaded successfully with composite hash %s",
+            policy_name,
+            hashes["policy"],
+        )
 
         return PolicyData(
             name=policy_name,
