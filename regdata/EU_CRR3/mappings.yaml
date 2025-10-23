@@ -1,0 +1,27 @@
+version: 2024-01
+product_mappings:
+  gov_bond:
+    exposure: sovereign
+    quality_step: level1
+  regional_bond:
+    exposure: sovereign
+    quality_step: level2
+  corp_bond_ig_senior:
+    exposure: corporate
+    quality_step: investment_grade/senior
+  corp_bond_hy_sub:
+    exposure: corporate
+    quality_step: high_yield/subordinated
+  res_mortgage:
+    exposure: retail
+    quality_step: mortgages
+  equity_listed:
+    exposure: equity
+    quality_step: listed
+counterparty_grades:
+  AAA: level1
+  AA: level2
+  A: investment_grade/senior
+  BBB: investment_grade/subordinated
+  BB: high_yield/senior
+  B: high_yield/subordinated
