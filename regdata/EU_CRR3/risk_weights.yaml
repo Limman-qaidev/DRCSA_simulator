@@ -1,0 +1,20 @@
+version: 2024-01
+exposures:
+  sovereign:
+    level1: 0.15
+    level2: 0.25
+    level3: 0.35
+  corporate:
+    investment_grade:
+      senior: 0.35
+      subordinated: 0.45
+    high_yield:
+      senior: 0.55
+      subordinated: 0.75
+  retail:
+    mortgages: 0.2
+    revolving: 0.45
+    other: 0.75
+  equity:
+    listed: 0.8
+    unlisted: 1.0

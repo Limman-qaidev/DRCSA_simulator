@@ -1,0 +1,13 @@
+version: 2023-10
+lgd:
+  financials:
+    senior_secured: 0.35
+    senior_unsecured: 0.45
+    subordinated: 0.65
+  commodities:
+    physical: 0.4
+    derivative: 0.5
+  securitisation:
+    senior: 0.25
+    mezzanine: 0.5
+    equity: 0.95

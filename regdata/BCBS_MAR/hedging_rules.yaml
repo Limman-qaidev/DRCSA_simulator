@@ -1,0 +1,23 @@
+version: 2023-10
+hedges:
+  credit_spread:
+    tranched_index:
+      eligible_instruments:
+        - tranched_cds
+        - total_return_swap
+      hedge_ratio: 0.85
+      correlation_floor: 0.4
+  commodities:
+    delta:
+      eligible_instruments:
+        - commodity_future
+        - commodity_swap
+      hedge_ratio: 0.8
+      liquidity_adjustment: 0.15
+  interest_rate:
+    curve:
+      eligible_instruments:
+        - ir_swap
+        - ir_future
+      hedge_ratio: 0.9
+      tenor_bucket_overlap: 0.2

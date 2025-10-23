@@ -1,0 +1,26 @@
+version: 2023-10
+product_mappings:
+  sovereign_bond:
+    exposure: sovereign
+    quality_step: non_default
+  defaulted_loan:
+    exposure: sovereign
+    quality_step: defaulted
+  large_bank_senior:
+    exposure: financials
+    quality_step: large_bank/senior
+  large_bank_subordinated:
+    exposure: financials
+    quality_step: large_bank/subordinated
+  commodity_forward:
+    exposure: commodities
+    quality_step: energy
+  securitisation_mezz:
+    exposure: securitisation
+    quality_step: mezzanine_tranche
+counterparty_grades:
+  AAA: non_default
+  A: large_bank/senior
+  BBB: large_bank/subordinated
+  BB: small_bank/senior
+  B: small_bank/subordinated

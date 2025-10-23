@@ -1,0 +1,20 @@
+version: 2023-10
+exposures:
+  sovereign:
+    non_default: 0.2
+    defaulted: 0.5
+  financials:
+    large_bank:
+      senior: 0.35
+      subordinated: 0.6
+    small_bank:
+      senior: 0.4
+      subordinated: 0.65
+  commodities:
+    energy: 0.5
+    metals: 0.45
+    agriculture: 0.4
+  securitisation:
+    senior_tranche: 0.3
+    mezzanine_tranche: 0.6
+    equity_tranche: 1.25

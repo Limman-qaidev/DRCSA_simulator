@@ -1,0 +1,9 @@
+version: 2024-01
+lgd:
+  senior_secured: 0.25
+  senior_unsecured: 0.4
+  subordinated: 0.6
+  equity: 0.9
+  covered_bonds:
+    mortgage: 0.2
+    public_sector: 0.25

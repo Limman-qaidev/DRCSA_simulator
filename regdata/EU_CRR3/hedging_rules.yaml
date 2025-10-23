@@ -1,0 +1,28 @@
+version: 2024-01
+hedges:
+  credit_spread:
+    single_name:
+      eligible_instruments:
+        - cds
+        - bond_short
+      hedge_ratio: 1.0
+      correlation_floor: 0.3
+    index:
+      eligible_instruments:
+        - cds_index
+      hedge_ratio: 0.9
+      correlation_floor: 0.35
+  equity:
+    delta_hedge:
+      eligible_instruments:
+        - equity_future
+        - equity_option
+      hedge_ratio: 0.85
+      correlation_cap: 0.75
+  fx:
+    cross_currency:
+      eligible_instruments:
+        - fx_forward
+        - fx_swap
+      hedge_ratio: 0.95
+      basis_adjustment: 0.1
