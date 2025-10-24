@@ -58,6 +58,7 @@ plugins = ["pydantic.mypy"]
 show_error_codes = true
 warn_unused_configs = true
 mypy_path = ["src"]
+exclude = ["^build/"]
 
 [[tool.mypy.overrides]]
 module = "drc_sa_calculator.ui.*"
