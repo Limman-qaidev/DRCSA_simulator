@@ -27,14 +27,7 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-include = ["drc_sa_calculator*"]
-exclude = [
-    "tests*",
-    "hypothesis*",
-    "schemathesis*",
-    "uvicorn*",
-    "yaml*",
-]
+where = ["src"]
 
 [tool.black]
 line-length = 79
@@ -44,12 +37,12 @@ target-version = ["py310"]
 profile = "black"
 line_length = 79
 known_first_party = ["drc_sa_calculator", "tests"]
-src_paths = ["drc_sa_calculator", "tests"]
+src_paths = ["src", "tests"]
 
 [tool.ruff]
 line-length = 79
 target-version = "py310"
-src = ["drc_sa_calculator", "tests"]
+src = ["src", "tests"]
 
 [tool.ruff.lint]
 select = ["E", "F", "B", "I", "UP"]
@@ -64,6 +57,7 @@ strict = true
 plugins = ["pydantic.mypy"]
 show_error_codes = true
 warn_unused_configs = true
+mypy_path = ["src"]
 
 [[tool.mypy.overrides]]
 module = "drc_sa_calculator.ui.*"

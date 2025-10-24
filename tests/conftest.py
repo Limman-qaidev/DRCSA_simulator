@@ -1,10 +1,7 @@
 """Shared pytest fixtures for the DRCSA simulator test-suite."""
 
-import sys
 from collections.abc import Iterable
 from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import pytest
 
@@ -19,7 +16,10 @@ from drc_sa_calculator.domain.models import Exposure, ScenarioDefinition
 @pytest.fixture(scope="session")
 def policy_loader() -> PolicyDataLoader:
     base_path = (
-        Path(__file__).resolve().parents[1] / "drc_sa_calculator" / "regdata"
+        Path(__file__).resolve().parents[1]
+        / "src"
+        / "drc_sa_calculator"
+        / "regdata"
     )
     return PolicyDataLoader(base_path=base_path)
 
