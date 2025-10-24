@@ -1,4 +1,11 @@
-"""Lightweight HTTP routing primitives for tests without external deps."""
+"""Lightweight HTTP routing primitives for tests without external deps.
+
+The simulator's automated test-suite exercises the HTTP surface without
+requiring FastAPI or an ASGI server.  This module therefore exposes a tiny
+router abstraction that mimics the subset of FastAPI features the application
+needs.  When FastAPI is available the application can be materialised into a
+real instance via :meth:`APIApplication.to_fastapi`.
+"""
 
 from __future__ import annotations
 
@@ -6,6 +13,27 @@ from collections.abc import Callable, Iterable, Mapping, MutableMapping
 from dataclasses import dataclass
 from inspect import Signature, signature
 from typing import Any
+
+_FastAPIApp: Any
+_FastAPIHTTPException: Any
+_FastAPIResponse: Any
+_fastapi_status: Any
+
+try:  # pragma: no cover - optional dependency import path
+    from fastapi import FastAPI as _ImportedFastAPIApp
+    from fastapi import HTTPException as _ImportedHTTPException
+    from fastapi import status as _imported_status
+    from fastapi.responses import JSONResponse as _ImportedJSONResponse
+except Exception:  # pragma: no cover - the stdlib-only path is fully tested
+    _FastAPIApp = None
+    _FastAPIHTTPException = None
+    _FastAPIResponse = None
+    _fastapi_status = None
+else:  # pragma: no cover - executed when FastAPI is available
+    _FastAPIApp = _ImportedFastAPIApp
+    _FastAPIHTTPException = _ImportedHTTPException
+    _FastAPIResponse = _ImportedJSONResponse
+    _fastapi_status = _imported_status
 
 
 class HTTPException(Exception):
@@ -25,17 +53,20 @@ class Response:
     body: Any = None
 
 
-class _StatusCodes:
-    """Subset of HTTP status codes referenced in the application."""
+if _fastapi_status is not None:  # pragma: no branch
+    status = _fastapi_status
+else:
 
-    HTTP_200_OK = 200
-    HTTP_201_CREATED = 201
-    HTTP_204_NO_CONTENT = 204
-    HTTP_400_BAD_REQUEST = 400
-    HTTP_404_NOT_FOUND = 404
+    class _StatusCodes:
+        """Subset of HTTP status codes referenced in the application."""
 
+        HTTP_200_OK = 200
+        HTTP_201_CREATED = 201
+        HTTP_204_NO_CONTENT = 204
+        HTTP_400_BAD_REQUEST = 400
+        HTTP_404_NOT_FOUND = 404
 
-status = _StatusCodes()
+    status = _StatusCodes()
 
 
 @dataclass
@@ -165,19 +196,49 @@ class APIApplication:
             params = self._match_path(route.path_template, path)
             if params is None:
                 continue
-            try:
-                result = self._invoke(route.handler, params, payload, query)
-            except HTTPException as exc:
-                return Response(
-                    status_code=exc.status_code, body={"detail": exc.detail}
-                )
-            if isinstance(result, Response):
-                return result
-            return Response(status_code=route.status_code, body=result)
+            return self._dispatch(
+                route, params, payload, query, convert_exceptions=False
+            )
         return Response(
             status_code=status.HTTP_404_NOT_FOUND,
             body={"detail": f"No route for {method} {path}"},
         )
+
+    def to_fastapi(self) -> Any:
+        """Materialise the stub routes into a FastAPI app when available."""
+
+        if _FastAPIApp is None or _FastAPIResponse is None:
+            raise RuntimeError(
+                "FastAPI is not installed; cannot create a FastAPI application"
+            )
+
+        fastapi_app = _FastAPIApp(**self.metadata)
+
+        for route in self._routes:
+
+            async def endpoint(request: Any, __route: _Route = route) -> Any:
+                payload: Any = None
+                if request.method in {"POST", "PUT", "PATCH"}:
+                    payload = await request.json()
+                response = self._dispatch(
+                    __route,
+                    request.path_params,
+                    payload,
+                    dict(request.query_params.multi_items()),
+                    convert_exceptions=True,
+                )
+                return _FastAPIResponse(
+                    content=response.body, status_code=response.status_code
+                )
+
+            fastapi_app.add_api_route(
+                route.path_template or "/",
+                endpoint,
+                methods=[route.method],
+                status_code=route.status_code,
+            )
+
+        return fastapi_app
 
     @staticmethod
     def _match_path(template: str, path: str) -> dict[str, str] | None:
@@ -232,6 +293,32 @@ class APIApplication:
                 f"Cannot populate parameter '{name}' for handler {handler}"
             )
         return handler(**kwargs)
+
+    def _dispatch(
+        self,
+        route: _Route,
+        params: Mapping[str, Any],
+        payload: Any,
+        query: MutableMapping[str, Any],
+        *,
+        convert_exceptions: bool,
+    ) -> Response:
+        try:
+            result = self._invoke(route.handler, params, payload, query)
+        except HTTPException as exc:
+            if convert_exceptions and _FastAPIHTTPException is not None:
+                raise _FastAPIHTTPException(
+                    status_code=getattr(exc, "status_code", 500),
+                    detail=getattr(exc, "detail", str(exc)),
+                ) from exc
+            status_code = getattr(
+                exc, "status_code", status.HTTP_400_BAD_REQUEST
+            )
+            detail = getattr(exc, "detail", str(exc))
+            return Response(status_code=status_code, body={"detail": detail})
+        if isinstance(result, Response):
+            return result
+        return Response(status_code=route.status_code, body=result)
 
 
 __all__ = [
