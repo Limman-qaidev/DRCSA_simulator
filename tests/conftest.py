@@ -6,6 +6,7 @@ from collections.abc import Iterable
 from pathlib import Path
 
 import pytest
+
 from drc_sa_calculator.domain.engine import (
     DRCSACalculationEngine,
     PolicyDataLoader,

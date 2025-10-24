@@ -1,14 +1,15 @@
 from __future__ import annotations
 
 import pytest
+from hypothesis import given
+from hypothesis import strategies as st
+
 from drc_sa_calculator.domain.models import (
     ComputationRequest,
     Exposure,
     PolicySelection,
     ScenarioDefinition,
 )
-from hypothesis import given
-from hypothesis import strategies as st
 
 pytestmark = pytest.mark.property
 
