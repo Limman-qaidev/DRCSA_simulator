@@ -5,13 +5,16 @@ description = "Default Risk Charge Standardised Approach calculator"
 authors = [{name = "DRCSA Team"}]
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "pydantic>=2.0",
+]
 
 [project.optional-dependencies]
 dev = [
     "black>=24.0",
     "isort>=5.12",
     "mypy>=1.8",
+    "pydantic>=2.0",
     "pytest>=8.0",
     "ruff>=0.3",
 ]
