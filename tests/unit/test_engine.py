@@ -1,15 +1,17 @@
-from __future__ import annotations
-
 import pytest
+
+from drc_sa_calculator.domain.engine import DRCSACalculationEngine
 from drc_sa_calculator.domain.models import (
     ComputationRequest,
     PolicySelection,
+    ScenarioDefinition,
     ScenarioMatrix,
 )
 
 
 def test_exposure_capital_charge_applies_lgd(
-    calculation_engine, baseline_scenario
+    calculation_engine: DRCSACalculationEngine,
+    baseline_scenario: ScenarioDefinition,
 ) -> None:
     request = ComputationRequest(
         policy=PolicySelection("BCBS_MAR"), baseline=baseline_scenario
@@ -32,7 +34,9 @@ def test_exposure_capital_charge_applies_lgd(
 
 
 def test_scenario_matrix_delta(
-    calculation_engine, baseline_scenario, stress_scenario
+    calculation_engine: DRCSACalculationEngine,
+    baseline_scenario: ScenarioDefinition,
+    stress_scenario: ScenarioDefinition,
 ) -> None:
     request = ComputationRequest(
         policy=PolicySelection("BCBS_MAR"),

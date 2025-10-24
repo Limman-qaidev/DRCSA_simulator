@@ -1,20 +1,26 @@
-from __future__ import annotations
+from collections.abc import Mapping
+from typing import Any
 
 import pytest
+from hypothesis import given
+from hypothesis import strategies as st
+
+from drc_sa_calculator.domain.engine import (
+    DRCSACalculationEngine,
+    PolicyDataLoader,
+)
 from drc_sa_calculator.domain.models import (
     ComputationRequest,
     Exposure,
     PolicySelection,
     ScenarioDefinition,
 )
-from hypothesis import given
-from hypothesis import strategies as st
 
 pytestmark = pytest.mark.property
 
 
 def _flatten_risk_weights(
-    node: dict, prefix: tuple[str, ...] = ()
+    node: Mapping[str, Any], prefix: tuple[str, ...] = ()
 ) -> list[tuple[tuple[str, ...], float]]:
     results: list[tuple[tuple[str, ...], float]] = []
     for key, value in node.items():
@@ -27,7 +33,9 @@ def _flatten_risk_weights(
 
 
 @pytest.fixture(scope="session")
-def risk_weight_cases(policy_loader) -> list[tuple[tuple[str, ...], float]]:
+def risk_weight_cases(
+    policy_loader: PolicyDataLoader,
+) -> list[tuple[tuple[str, ...], float]]:
     policy = policy_loader.load("BCBS_MAR")
     exposures = policy.risk_weights["exposures"]
     return _flatten_risk_weights(exposures)
@@ -35,9 +43,9 @@ def risk_weight_cases(policy_loader) -> list[tuple[tuple[str, ...], float]]:
 
 @given(st.data())
 def test_resolved_risk_weights_match_policy(
-    calculation_engine,
+    calculation_engine: DRCSACalculationEngine,
     risk_weight_cases: list[tuple[tuple[str, ...], float]],
-    data,
+    data: Any,
 ) -> None:
     path, expected = data.draw(st.sampled_from(risk_weight_cases))
     exposure_class = path[0]

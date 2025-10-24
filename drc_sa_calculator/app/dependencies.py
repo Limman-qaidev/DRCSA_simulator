@@ -14,7 +14,7 @@ from ..infrastructure.memory import InMemoryScenarioStore
 
 @lru_cache
 def _policy_loader() -> PolicyDataLoader:
-    base_path = Path(__file__).resolve().parents[2] / "regdata"
+    base_path = Path(__file__).resolve().parents[1] / "regdata"
     return PolicyDataLoader(base_path=base_path)
 
 

@@ -1,12 +1,18 @@
-from __future__ import annotations
-
 import pytest
+
 from drc_sa_calculator.domain.compare import compare_scenarios
-from drc_sa_calculator.domain.models import ComputationRequest, PolicySelection
+from drc_sa_calculator.domain.engine import DRCSACalculationEngine
+from drc_sa_calculator.domain.models import (
+    ComputationRequest,
+    PolicySelection,
+    ScenarioDefinition,
+)
 
 
 def test_compare_scenarios_reports_deltas(
-    calculation_engine, baseline_scenario, stress_scenario
+    calculation_engine: DRCSACalculationEngine,
+    baseline_scenario: ScenarioDefinition,
+    stress_scenario: ScenarioDefinition,
 ) -> None:
     request = ComputationRequest(
         policy=PolicySelection("BCBS_MAR"),

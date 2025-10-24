@@ -3,15 +3,11 @@
 from __future__ import annotations
 
 import logging
-from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
-
-from ...domain.models import ScenarioDefinition
 from ...domain.rules import validate_scenario
-from ...infrastructure.memory import InMemoryScenarioStore
 from .. import schemas
 from ..dependencies import get_scenario_store
+from ..framework import APIRouter, HTTPException, Response, status
 
 LOGGER = logging.getLogger(__name__)
 
@@ -19,18 +15,12 @@ router = APIRouter(prefix="/scenarios", tags=["scenarios"])
 
 
 @router.get("", response_model=list[schemas.ScenarioSummaryModel])
-def list_scenarios(
-    store: Annotated[InMemoryScenarioStore, Depends(get_scenario_store)],
-) -> list[schemas.ScenarioSummaryModel]:
+def list_scenarios() -> list[dict[str, object]]:
     """Return the registered scenarios."""
 
+    store = get_scenario_store()
     summaries = [
-        schemas.ScenarioSummaryModel(
-            name=item.name,
-            description=item.description,
-            created_at=item.created_at,
-            tags=item.tags,
-        )
+        schemas.ScenarioSummaryModel.from_domain(item).to_dict()
         for item in store.list()
     ]
     LOGGER.debug("Returning %s scenarios", len(summaries))
@@ -38,16 +28,14 @@ def list_scenarios(
 
 
 @router.get("/{name}", response_model=schemas.ScenarioModel)
-def get_scenario(
-    name: str,
-    store: Annotated[InMemoryScenarioStore, Depends(get_scenario_store)],
-) -> schemas.ScenarioModel:
+def get_scenario(name: str) -> dict[str, object]:
+    store = get_scenario_store()
     scenario = store.get(name)
     if not scenario:
         raise HTTPException(
             status_code=404, detail=f"Scenario '{name}' not found"
         )
-    return _to_schema(scenario)
+    return schemas.ScenarioModel.from_domain(scenario).to_dict()
 
 
 @router.put(
@@ -57,10 +45,11 @@ def get_scenario(
 )
 def upsert_scenario(
     name: str,
-    payload: schemas.ScenarioModel,
-    store: Annotated[InMemoryScenarioStore, Depends(get_scenario_store)],
-) -> schemas.ScenarioModel:
-    scenario = payload.to_domain()
+    payload: dict[str, object],
+) -> dict[str, object]:
+    store = get_scenario_store()
+    model = schemas.ScenarioModel.from_dict(payload)
+    scenario = model.to_domain()
     validate_scenario(scenario)
     if scenario.name != name:
         raise HTTPException(
@@ -69,41 +58,15 @@ def upsert_scenario(
         )
     store.save(scenario)
     LOGGER.info("Scenario '%s' persisted", name)
-    return _to_schema(scenario)
+    return schemas.ScenarioModel.from_domain(scenario).to_dict()
 
 
 @router.delete("/{name}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_scenario(
-    name: str,
-    store: Annotated[InMemoryScenarioStore, Depends(get_scenario_store)],
-) -> Response:
+def delete_scenario(name: str) -> Response:
+    store = get_scenario_store()
     if not store.get(name):
         raise HTTPException(
             status_code=404, detail=f"Scenario '{name}' not found"
         )
     store.delete(name)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
-
-
-def _to_schema(scenario: ScenarioDefinition) -> schemas.ScenarioModel:
-    return schemas.ScenarioModel(
-        name=scenario.name,
-        description=scenario.description,
-        tags=scenario.tags,
-        exposures=[
-            schemas.ExposureModel(
-                trade_id=exposure.trade_id,
-                notional=exposure.notional,
-                currency=exposure.currency,
-                product_type=exposure.product_type,
-                exposure_class=exposure.exposure_class,
-                quality_step=exposure.quality_step,
-                counterparty_grade=exposure.counterparty_grade,
-                lgd_grade=exposure.lgd_grade,
-                hedging_set=exposure.hedging_set,
-                metadata=dict(exposure.metadata),
-            )
-            for exposure in scenario.exposures
-        ],
-        created_at=scenario.created_at,
-    )

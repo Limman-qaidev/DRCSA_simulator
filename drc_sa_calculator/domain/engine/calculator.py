@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from collections.abc import Mapping
 from datetime import datetime
+from typing import cast
 
 from .. import models
 from ..rules import validate_scenarios
@@ -141,9 +142,7 @@ class DRCSACalculationEngine:
     def _risk_weight_from_policy(
         self, policy: PolicyData, classification_path: tuple[str, ...]
     ) -> float:
-        node: Mapping[str, float | Mapping[str, float]] = policy.risk_weights[
-            "exposures"
-        ]
+        node: Mapping[str, object] = policy.risk_weights["exposures"]
         for segment in classification_path:
             if segment not in node:
                 message = (
@@ -152,7 +151,7 @@ class DRCSACalculationEngine:
                 raise RiskWeightResolutionError(message)
             next_node = node[segment]
             if isinstance(next_node, Mapping):
-                node = next_node  # type: ignore[assignment]
+                node = cast(Mapping[str, object], next_node)
             else:
                 node = {segment: next_node}
         last_segment = classification_path[-1]
@@ -188,7 +187,7 @@ class DRCSACalculationEngine:
                         candidate = node[segment]
                         if isinstance(candidate, int | float):
                             return float(candidate)
-                        node = candidate  # type: ignore[assignment]
+                        node = cast(Mapping[str, object], candidate)
         if lgd_grade and lgd_grade in lgd_table:
             candidate = lgd_table[lgd_grade]
             if isinstance(candidate, int | float):

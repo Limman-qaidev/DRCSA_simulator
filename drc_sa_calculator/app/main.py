@@ -4,24 +4,22 @@ from __future__ import annotations
 
 import logging
 
-from fastapi import FastAPI
-
+from .framework import APIApplication, Response, status
 from .routers import compute, datasets, reference, scenarios
 
 LOGGER = logging.getLogger(__name__)
 
 
-def create_app() -> FastAPI:
+def create_app() -> APIApplication:
     """Instantiate the FastAPI application."""
 
-    application = FastAPI(
+    application = APIApplication(
         title="DRC SA Calculator",
         version="0.1.0",
         description=(
             "Default Risk Charge (SA) calculation and scenario comparison "
             "service"
         ),
-        openapi_version="3.1.0",
     )
     application.include_router(datasets.router)
     application.include_router(scenarios.router)
@@ -29,8 +27,8 @@ def create_app() -> FastAPI:
     application.include_router(reference.router)
 
     @application.get("/health", tags=["system"])
-    async def health() -> dict[str, str]:
-        return {"status": "ok"}
+    def health() -> Response:
+        return Response(status_code=status.HTTP_200_OK, body={"status": "ok"})
 
     LOGGER.info(
         "FastAPI application created with routers: %s",

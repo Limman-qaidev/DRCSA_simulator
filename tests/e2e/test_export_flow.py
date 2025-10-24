@@ -1,14 +1,15 @@
-from __future__ import annotations
-
 import socket
 import threading
 import time
-from typing import TYPE_CHECKING, Any
+from collections.abc import Generator
+from typing import TYPE_CHECKING, Any, cast
 
 import pytest
 import uvicorn
+
 from drc_sa_calculator.app.dependencies import get_scenario_store
 from drc_sa_calculator.app.main import create_app
+from drc_sa_calculator.domain.models import ScenarioDefinition
 
 _playwright = pytest.importorskip("playwright.sync_api")
 
@@ -43,7 +44,7 @@ def _wait_for_port(port: int, timeout: float = 5.0) -> None:
 
 
 @pytest.fixture(scope="module")
-def api_server() -> str:
+def api_server() -> Generator[str, None, None]:
     app = create_app()
     port = _reserve_port()
     config = uvicorn.Config(
@@ -62,7 +63,7 @@ def api_server() -> str:
         thread.join(timeout=5)
 
 
-def _serialise_scenario(scenario) -> dict[str, Any]:
+def _serialise_scenario(scenario: ScenarioDefinition) -> dict[str, Any]:
     return {
         "name": scenario.name,
         "description": scenario.description,
@@ -87,11 +88,13 @@ def _serialise_scenario(scenario) -> dict[str, Any]:
 
 def _ensure_ok(response: APIResponse) -> dict[str, Any]:
     assert response.ok, response.text()
-    return response.json()
+    return cast(dict[str, Any], response.json())
 
 
 def test_export_flow_via_rest(
-    api_server, baseline_scenario, stress_scenario
+    api_server: str,
+    baseline_scenario: ScenarioDefinition,
+    stress_scenario: ScenarioDefinition,
 ) -> None:
     get_scenario_store().clear()
     with _playwright.sync_playwright() as pw:

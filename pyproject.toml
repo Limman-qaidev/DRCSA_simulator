@@ -5,34 +5,22 @@ description = "Default Risk Charge Standardised Approach calculator"
 authors = [{name = "DRCSA Team"}]
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = [
-    "fastapi>=0.110",
-    "nicegui>=1.4.0",
-    "pydantic>=1.10",
-    "typer[all]>=0.9",
-    "httpx>=0.24",
-    "uvicorn>=0.22",
-    "pyyaml>=6.0",
-]
+dependencies = []
 
 [project.optional-dependencies]
 dev = [
     "black>=24.0",
-    "hypothesis>=6.100",
     "isort>=5.12",
     "mypy>=1.8",
-    "playwright>=1.42",
     "pytest>=8.0",
-    "schemathesis>=3.21",
     "ruff>=0.3",
-    "types-PyYAML>=6.0.12",
 ]
 
 [project.scripts]
 drcsa = "drc_sa_calculator.cli:app"
 
 [build-system]
-requires = ["setuptools>=67", "wheel"]
+requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.black]
@@ -42,6 +30,8 @@ target-version = ["py310"]
 [tool.isort]
 profile = "black"
 line_length = 79
+known_first_party = ["drc_sa_calculator", "tests"]
+src_paths = ["drc_sa_calculator", "tests"]
 
 [tool.ruff]
 line-length = 79
@@ -52,12 +42,23 @@ src = ["drc_sa_calculator", "tests"]
 select = ["E", "F", "B", "I", "UP"]
 ignore = ["E203"]
 
+[tool.ruff.lint.isort]
+known-first-party = ["drc_sa_calculator", "tests"]
+
 [tool.mypy]
 python_version = "3.10"
 strict = true
 plugins = ["pydantic.mypy"]
 show_error_codes = true
 warn_unused_configs = true
+
+[[tool.mypy.overrides]]
+module = "drc_sa_calculator.ui.*"
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = "playwright.*"
+ignore_missing_imports = true
 
 [tool.pydantic-mypy]
 init_forbid_extra = true

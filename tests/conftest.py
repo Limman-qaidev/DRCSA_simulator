@@ -1,13 +1,16 @@
 """Shared pytest fixtures for the DRCSA simulator test-suite."""
 
-from __future__ import annotations
-
+import sys
 from collections.abc import Iterable
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 import pytest
+
 from drc_sa_calculator.domain.engine import (
     DRCSACalculationEngine,
+    PolicyData,
     PolicyDataLoader,
 )
 from drc_sa_calculator.domain.models import Exposure, ScenarioDefinition
@@ -22,7 +25,7 @@ def policy_loader() -> PolicyDataLoader:
 
 
 @pytest.fixture(scope="session")
-def policy_data(policy_loader: PolicyDataLoader):
+def policy_data(policy_loader: PolicyDataLoader) -> PolicyData:
     return policy_loader.load("BCBS_MAR")
 
 

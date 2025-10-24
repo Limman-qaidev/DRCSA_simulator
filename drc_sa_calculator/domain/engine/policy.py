@@ -8,7 +8,7 @@ import logging
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import yaml
 
@@ -35,7 +35,10 @@ class PolicyData:
 
         if not hasattr(self, name):
             raise KeyError(f"Unknown policy table '{name}'")
-        return getattr(self, name)
+        value = getattr(self, name)
+        if not isinstance(value, Mapping):
+            raise KeyError(f"Attribute '{name}' is not a mapping table")
+        return cast(Mapping[str, Any], value)
 
 
 class PolicyDataLoader:
