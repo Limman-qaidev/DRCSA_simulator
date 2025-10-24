@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 import pytest
 import schemathesis
-
 from drc_sa_calculator.app.main import create_app
 
 pytestmark = pytest.mark.contract
@@ -48,13 +48,15 @@ def test_compute_contract(baseline_scenario, stress_scenario):
     case.validate_response(response)
     payload = response.json()
     assert response.status_code == 200
-    assert payload["result"]["baseline"]["exposure_count"] == len(baseline_scenario.exposures)
+    assert payload["result"]["baseline"]["exposure_count"] == len(
+        baseline_scenario.exposures
+    )
 
 
 def test_reference_risk_weights_contract():
-    case = SCHEMA["/reference/policies/{policy_name}/risk-weights"]["get"].make_case(
-        path_parameters={"policy_name": "BCBS_MAR"}
-    )
+    case = SCHEMA["/reference/policies/{policy_name}/risk-weights"][
+        "get"
+    ].make_case(path_parameters={"policy_name": "BCBS_MAR"})
     response = case.call_asgi()
     case.validate_response(response)
     data = response.json()

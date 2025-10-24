@@ -1,4 +1,5 @@
 """NiceGUI page for comparing scenarios against the baseline."""
+
 from __future__ import annotations
 
 from nicegui import ui
@@ -34,7 +35,9 @@ def register(api_url: str) -> None:
 
         async def run_compare() -> None:
             if not baseline_select.value or not scenario_select.value:
-                ui.notification("Select both baseline and scenario", color="negative")
+                ui.notification(
+                    "Select both baseline and scenario", color="negative"
+                )
                 return
             baseline = await client.get_scenario(baseline_select.value)
             scenario = await client.get_scenario(scenario_select.value)
@@ -53,7 +56,9 @@ def register(api_url: str) -> None:
             )
             table.rows = [
                 {"trade": trade_id, "delta": delta}
-                for trade_id, delta in comparison.get("exposure_deltas", {}).items()
+                for trade_id, delta in comparison.get(
+                    "exposure_deltas", {}
+                ).items()
             ]
 
         ui.button("Compare", on_click=run_compare)

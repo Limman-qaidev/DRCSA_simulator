@@ -1,4 +1,5 @@
 """NiceGUI page for loading and inspecting policy datasets."""
+
 from __future__ import annotations
 
 from nicegui import ui
@@ -14,7 +15,13 @@ def register(api_url: str) -> None:
         ui.label("Policy Data Loader").classes("text-2xl font-bold mb-4")
         status = ui.label("Fetching policies...")
         select = ui.select(options=[], label="Available policies")
-        table = ui.table(columns=[{"name": "table", "label": "Dataset"}, {"name": "hash", "label": "Hash"}], rows=[])
+        table = ui.table(
+            columns=[
+                {"name": "table", "label": "Dataset"},
+                {"name": "hash", "label": "Hash"},
+            ],
+            rows=[],
+        )
 
         async def refresh_policies() -> None:
             policies = await client.list_policies()

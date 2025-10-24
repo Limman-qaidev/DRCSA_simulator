@@ -1,4 +1,5 @@
 """NiceGUI page to display scenario matrix results."""
+
 from __future__ import annotations
 
 from nicegui import ui
@@ -15,7 +16,9 @@ def register(api_url: str) -> None:
         status = ui.label("Loading scenarios...")
         policy_input = ui.input("Policy", value="BCBS_MAR")
         baseline_select = ui.select(options=[], label="Baseline scenario")
-        scenario_select = ui.select(options=[], label="Comparison scenarios", multiple=True)
+        scenario_select = ui.select(
+            options=[], label="Comparison scenarios", multiple=True
+        )
         table = ui.table(
             columns=[
                 {"name": "scenario", "label": "Scenario"},
@@ -38,7 +41,9 @@ def register(api_url: str) -> None:
                 return
             baseline = await client.get_scenario(baseline_select.value)
             scenario_names = scenario_select.value or []
-            scenario_payloads = [await client.get_scenario(name) for name in scenario_names]
+            scenario_payloads = [
+                await client.get_scenario(name) for name in scenario_names
+            ]
             payload = {
                 "policy": policy_input.value,
                 "baseline": baseline,
@@ -62,7 +67,8 @@ def register(api_url: str) -> None:
                     {
                         "scenario": scenario["scenario_name"],
                         "capital": scenario["total_capital_charge"],
-                        "delta": scenario["total_capital_charge"] - baseline_capital,
+                        "delta": scenario["total_capital_charge"]
+                        - baseline_capital,
                     }
                 )
             table.rows = rows

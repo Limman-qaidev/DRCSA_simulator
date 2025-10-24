@@ -1,8 +1,10 @@
 """Utility HTTP client for interacting with the FastAPI backend."""
+
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, Iterable, Mapping, Sequence
+from collections.abc import Iterable, Mapping, Sequence
+from typing import Any
 
 import httpx
 
@@ -40,7 +42,9 @@ class ApiClient:
             response.raise_for_status()
             return response.json()
 
-    async def save_scenario(self, name: str, payload: Mapping[str, Any]) -> Mapping[str, Any]:
+    async def save_scenario(
+        self, name: str, payload: Mapping[str, Any]
+    ) -> Mapping[str, Any]:
         async with httpx.AsyncClient(base_url=self._base_url) as client:
             response = await client.put(f"/scenarios/{name}", json=payload)
             response.raise_for_status()

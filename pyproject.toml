@@ -36,15 +36,15 @@ requires = ["setuptools>=67", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.black]
-line-length = 88
+line-length = 79
 target-version = ["py310"]
 
 [tool.isort]
 profile = "black"
-line_length = 88
+line_length = 79
 
 [tool.ruff]
-line-length = 88
+line-length = 79
 target-version = "py310"
 src = ["drc_sa_calculator", "tests"]
 

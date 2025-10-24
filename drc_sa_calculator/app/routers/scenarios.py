@@ -1,24 +1,27 @@
 """Scenario router for CRUD style operations."""
+
 from __future__ import annotations
 
 import logging
-from typing import List
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 
-from .. import schemas
-from ..dependencies import get_scenario_store
 from ...domain.models import ScenarioDefinition
 from ...domain.rules import validate_scenario
 from ...infrastructure.memory import InMemoryScenarioStore
+from .. import schemas
+from ..dependencies import get_scenario_store
 
 LOGGER = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/scenarios", tags=["scenarios"])
 
 
-@router.get("", response_model=List[schemas.ScenarioSummaryModel])
-def list_scenarios(store: InMemoryScenarioStore = Depends(get_scenario_store)) -> List[schemas.ScenarioSummaryModel]:
+@router.get("", response_model=list[schemas.ScenarioSummaryModel])
+def list_scenarios(
+    store: Annotated[InMemoryScenarioStore, Depends(get_scenario_store)],
+) -> list[schemas.ScenarioSummaryModel]:
     """Return the registered scenarios."""
 
     summaries = [
@@ -35,18 +38,27 @@ def list_scenarios(store: InMemoryScenarioStore = Depends(get_scenario_store)) -
 
 
 @router.get("/{name}", response_model=schemas.ScenarioModel)
-def get_scenario(name: str, store: InMemoryScenarioStore = Depends(get_scenario_store)) -> schemas.ScenarioModel:
+def get_scenario(
+    name: str,
+    store: Annotated[InMemoryScenarioStore, Depends(get_scenario_store)],
+) -> schemas.ScenarioModel:
     scenario = store.get(name)
     if not scenario:
-        raise HTTPException(status_code=404, detail=f"Scenario '{name}' not found")
+        raise HTTPException(
+            status_code=404, detail=f"Scenario '{name}' not found"
+        )
     return _to_schema(scenario)
 
 
-@router.put("/{name}", response_model=schemas.ScenarioModel, status_code=status.HTTP_201_CREATED)
+@router.put(
+    "/{name}",
+    response_model=schemas.ScenarioModel,
+    status_code=status.HTTP_201_CREATED,
+)
 def upsert_scenario(
     name: str,
     payload: schemas.ScenarioModel,
-    store: InMemoryScenarioStore = Depends(get_scenario_store),
+    store: Annotated[InMemoryScenarioStore, Depends(get_scenario_store)],
 ) -> schemas.ScenarioModel:
     scenario = payload.to_domain()
     validate_scenario(scenario)
@@ -61,9 +73,14 @@ def upsert_scenario(
 
 
 @router.delete("/{name}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_scenario(name: str, store: InMemoryScenarioStore = Depends(get_scenario_store)) -> Response:
+def delete_scenario(
+    name: str,
+    store: Annotated[InMemoryScenarioStore, Depends(get_scenario_store)],
+) -> Response:
     if not store.get(name):
-        raise HTTPException(status_code=404, detail=f"Scenario '{name}' not found")
+        raise HTTPException(
+            status_code=404, detail=f"Scenario '{name}' not found"
+        )
     store.delete(name)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 

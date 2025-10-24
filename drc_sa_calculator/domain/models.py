@@ -1,9 +1,10 @@
 """Domain models for DRCSA calculator."""
+
 from __future__ import annotations
 
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Iterable, Mapping, Optional, Tuple
 
 
 @dataclass(frozen=True)
@@ -20,12 +21,12 @@ class Exposure:
     trade_id: str
     notional: float
     currency: str
-    product_type: Optional[str] = None
-    exposure_class: Optional[str] = None
-    quality_step: Optional[str] = None
-    counterparty_grade: Optional[str] = None
-    lgd_grade: Optional[str] = None
-    hedging_set: Optional[str] = None
+    product_type: str | None = None
+    exposure_class: str | None = None
+    quality_step: str | None = None
+    counterparty_grade: str | None = None
+    lgd_grade: str | None = None
+    hedging_set: str | None = None
     metadata: Mapping[str, str] = field(default_factory=dict)
 
 
@@ -34,10 +35,10 @@ class ScenarioDefinition:
     """User provided scenario definition containing exposures."""
 
     name: str
-    description: Optional[str]
-    exposures: Tuple[Exposure, ...]
+    description: str | None
+    exposures: tuple[Exposure, ...]
     created_at: datetime = field(default_factory=datetime.utcnow)
-    tags: Tuple[str, ...] = field(default_factory=tuple)
+    tags: tuple[str, ...] = field(default_factory=tuple)
 
     def __post_init__(self) -> None:  # pragma: no cover - dataclass hook
         object.__setattr__(self, "exposures", tuple(self.exposures))
@@ -49,9 +50,9 @@ class ScenarioRegistryEntry:
     """Descriptor for stored scenarios."""
 
     name: str
-    description: Optional[str]
+    description: str | None
     created_at: datetime
-    tags: Tuple[str, ...] = field(default_factory=tuple)
+    tags: tuple[str, ...] = field(default_factory=tuple)
 
 
 @dataclass(frozen=True)
@@ -70,8 +71,8 @@ class ExposureComputation:
     notional: float
     risk_weight: float
     capital_charge: float
-    classification_path: Tuple[str, ...]
-    lgd: Optional[float]
+    classification_path: tuple[str, ...]
+    lgd: float | None
     metadata: Mapping[str, str] = field(default_factory=dict)
 
 
@@ -81,7 +82,7 @@ class ScenarioResult:
 
     scenario_name: str
     total_capital_charge: float
-    exposures: Tuple[ExposureComputation, ...]
+    exposures: tuple[ExposureComputation, ...]
     exposure_count: int
     total_notional: float
 
@@ -92,7 +93,7 @@ class ComputationRequest:
 
     policy: PolicySelection
     baseline: ScenarioDefinition
-    scenarios: Tuple[ScenarioDefinition, ...] = field(default_factory=tuple)
+    scenarios: tuple[ScenarioDefinition, ...] = field(default_factory=tuple)
 
     def __post_init__(self) -> None:  # pragma: no cover - dataclass hook
         object.__setattr__(self, "scenarios", tuple(self.scenarios))
@@ -104,7 +105,7 @@ class ComputationResult:
 
     policy: PolicyContext
     baseline: ScenarioResult
-    scenarios: Tuple[ScenarioResult, ...]
+    scenarios: tuple[ScenarioResult, ...]
     generated_at: datetime
 
 
@@ -123,16 +124,20 @@ class ScenarioMatrix:
     """Matrix view of multiple scenario outcomes."""
 
     baseline: ScenarioResult
-    scenarios: Tuple[ScenarioResult, ...]
+    scenarios: tuple[ScenarioResult, ...]
 
-    def iter_rows(self) -> Iterable[Tuple[str, float, float]]:
+    def iter_rows(self) -> Iterable[tuple[str, float, float]]:
         """Yield tuples of scenario name, scenario charge, and delta."""
 
         baseline_charge = self.baseline.total_capital_charge
         yield (self.baseline.scenario_name, baseline_charge, 0.0)
         for scenario in self.scenarios:
             delta = scenario.total_capital_charge - baseline_charge
-            yield (scenario.scenario_name, scenario.total_capital_charge, delta)
+            yield (
+                scenario.scenario_name,
+                scenario.total_capital_charge,
+                delta,
+            )
 
 
 __all__ = [

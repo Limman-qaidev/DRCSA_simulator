@@ -1,8 +1,9 @@
 """In-memory persistence components."""
+
 from __future__ import annotations
 
 import logging
-from typing import Dict, Iterable
+from collections.abc import Iterable
 
 from ..domain.models import ScenarioDefinition, ScenarioRegistryEntry
 
@@ -13,7 +14,7 @@ class InMemoryScenarioStore:
     """Simple in-memory scenario registry for the API and UI."""
 
     def __init__(self) -> None:
-        self._storage: Dict[str, ScenarioDefinition] = {}
+        self._storage: dict[str, ScenarioDefinition] = {}
 
     def list(self) -> Iterable[ScenarioRegistryEntry]:
         for scenario in self._storage.values():

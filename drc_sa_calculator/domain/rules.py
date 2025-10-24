@@ -1,8 +1,9 @@
 """Validation rules for DRCSA scenarios and data."""
+
 from __future__ import annotations
 
 import logging
-from typing import Iterable
+from collections.abc import Iterable
 
 from .models import Exposure, ScenarioDefinition
 
@@ -30,7 +31,11 @@ def _ensure_currency(exposure: Exposure) -> None:
 def validate_scenario(scenario: ScenarioDefinition) -> None:
     """Validate that a scenario definition is well formed."""
 
-    LOGGER.debug("Validating scenario '%s' with %s exposures", scenario.name, len(scenario.exposures))
+    LOGGER.debug(
+        "Validating scenario '%s' with %s exposures",
+        scenario.name,
+        len(scenario.exposures),
+    )
     if not scenario.exposures:
         raise ScenarioValidationError(
             f"Scenario '{scenario.name}' must contain at least one exposure"
@@ -40,9 +45,11 @@ def validate_scenario(scenario: ScenarioDefinition) -> None:
         _ensure_positive_notional(exposure)
         _ensure_currency(exposure)
         if exposure.trade_id in seen:
-            raise ScenarioValidationError(
-                f"Scenario '{scenario.name}' contains duplicate trade id '{exposure.trade_id}'"
+            message = (
+                f"Scenario '{scenario.name}' contains duplicate trade id "
+                f"'{exposure.trade_id}'"
             )
+            raise ScenarioValidationError(message)
         seen.add(exposure.trade_id)
 
 

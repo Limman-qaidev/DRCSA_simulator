@@ -1,7 +1,6 @@
 """NiceGUI page for creating and editing scenarios."""
-from __future__ import annotations
 
-from typing import List
+from __future__ import annotations
 
 from nicegui import ui
 
@@ -18,7 +17,7 @@ def register(api_url: str) -> None:
         description_input = ui.textarea("Description")
         tags_input = ui.input("Tags (comma separated)")
 
-        exposures: List[dict] = []
+        exposures: list[dict] = []
         table = ui.table(
             title="Exposures",
             columns=[
@@ -42,7 +41,10 @@ def register(api_url: str) -> None:
 
         async def add_exposure() -> None:
             if not trade_id_input.value or (notional_input.value or 0.0) <= 0:
-                ui.notification("Trade ID and positive notional are required", color="negative")
+                ui.notification(
+                    "Trade ID and positive notional are required",
+                    color="negative",
+                )
                 return
             exposures.append(
                 {
@@ -55,7 +57,12 @@ def register(api_url: str) -> None:
                 }
             )
             await refresh_table()
-            for field in (trade_id_input, product_input, exposure_class_input, quality_input):
+            for field in (
+                trade_id_input,
+                product_input,
+                exposure_class_input,
+                quality_input,
+            ):
                 field.value = ""
             notional_input.value = 0.0
 
@@ -66,7 +73,11 @@ def register(api_url: str) -> None:
             payload = {
                 "name": name_input.value,
                 "description": description_input.value or None,
-                "tags": [tag.strip() for tag in (tags_input.value or "").split(",") if tag.strip()],
+                "tags": [
+                    tag.strip()
+                    for tag in (tags_input.value or "").split(",")
+                    if tag.strip()
+                ],
                 "exposures": exposures,
             }
             saved = await client.save_scenario(name_input.value, payload)

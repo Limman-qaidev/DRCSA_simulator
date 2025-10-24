@@ -1,14 +1,19 @@
 from __future__ import annotations
 
 import pytest
-
-from drc_sa_calculator.domain.models import ComputationRequest, PolicySelection, ScenarioMatrix
+from drc_sa_calculator.domain.models import (
+    ComputationRequest,
+    PolicySelection,
+    ScenarioMatrix,
+)
 
 
 def test_exposure_capital_charge_applies_lgd(
     calculation_engine, baseline_scenario
 ) -> None:
-    request = ComputationRequest(policy=PolicySelection("BCBS_MAR"), baseline=baseline_scenario)
+    request = ComputationRequest(
+        policy=PolicySelection("BCBS_MAR"), baseline=baseline_scenario
+    )
     result = calculation_engine.compute(request)
 
     exposures = {item.trade_id: item for item in result.baseline.exposures}
@@ -20,11 +25,15 @@ def test_exposure_capital_charge_applies_lgd(
     assert exposures["T2"].lgd == 0.35
     assert exposures["T2"].capital_charge == expected_bank_charge
 
-    assert result.baseline.total_capital_charge == pytest.approx(200_000.0 + expected_bank_charge)
+    assert result.baseline.total_capital_charge == pytest.approx(
+        200_000.0 + expected_bank_charge
+    )
     assert result.baseline.total_notional == 1_500_000.0
 
 
-def test_scenario_matrix_delta(calculation_engine, baseline_scenario, stress_scenario) -> None:
+def test_scenario_matrix_delta(
+    calculation_engine, baseline_scenario, stress_scenario
+) -> None:
     request = ComputationRequest(
         policy=PolicySelection("BCBS_MAR"),
         baseline=baseline_scenario,
@@ -39,5 +48,6 @@ def test_scenario_matrix_delta(calculation_engine, baseline_scenario, stress_sce
     assert stress_row[0] == "stress"
     assert stress_row[1] == result.scenarios[0].total_capital_charge
     assert stress_row[2] == pytest.approx(
-        result.scenarios[0].total_capital_charge - result.baseline.total_capital_charge
+        result.scenarios[0].total_capital_charge
+        - result.baseline.total_capital_charge
     )

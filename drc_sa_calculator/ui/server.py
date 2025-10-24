@@ -1,9 +1,16 @@
 """NiceGUI server entrypoint."""
+
 from __future__ import annotations
 
 from nicegui import ui
 
-from .pages import baseline, compare_view, data_loader, scenario_builder, scenario_matrix
+from .pages import (
+    baseline,
+    compare_view,
+    data_loader,
+    scenario_builder,
+    scenario_matrix,
+)
 
 
 def create_ui(api_url: str = "http://localhost:8000") -> None:

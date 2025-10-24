@@ -1,4 +1,5 @@
 """NiceGUI page for configuring the baseline scenario."""
+
 from __future__ import annotations
 
 from nicegui import ui
@@ -38,7 +39,8 @@ def register(api_url: str) -> None:
             table.rows = [
                 {
                     "trade_id": exposure["trade_id"],
-                    "product": exposure.get("product_type") or exposure.get("exposure_class", ""),
+                    "product": exposure.get("product_type")
+                    or exposure.get("exposure_class", ""),
                     "notional": exposure["notional"],
                     "currency": exposure["currency"],
                 }

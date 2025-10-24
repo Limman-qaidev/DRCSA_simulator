@@ -1,4 +1,5 @@
 """FastAPI entrypoint for the DRCSA calculator services."""
+
 from __future__ import annotations
 
 import logging
@@ -16,7 +17,10 @@ def create_app() -> FastAPI:
     application = FastAPI(
         title="DRC SA Calculator",
         version="0.1.0",
-        description="Default Risk Charge (SA) calculation and scenario comparison service",
+        description=(
+            "Default Risk Charge (SA) calculation and scenario comparison "
+            "service"
+        ),
         openapi_version="3.1.0",
     )
     application.include_router(datasets.router)
@@ -28,12 +32,15 @@ def create_app() -> FastAPI:
     async def health() -> dict[str, str]:
         return {"status": "ok"}
 
-    LOGGER.info("FastAPI application created with routers: %s", [
-        "datasets",
-        "scenarios",
-        "compute",
-        "reference",
-    ])
+    LOGGER.info(
+        "FastAPI application created with routers: %s",
+        [
+            "datasets",
+            "scenarios",
+            "compute",
+            "reference",
+        ],
+    )
     return application
 
 

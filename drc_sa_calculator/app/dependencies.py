@@ -1,9 +1,10 @@
 """FastAPI dependency providers for shared services."""
+
 from __future__ import annotations
 
+from collections.abc import Iterable
 from functools import lru_cache
 from pathlib import Path
-from typing import Iterable
 
 from ..domain.compare import compare_scenarios
 from ..domain.engine import DRCSACalculationEngine, PolicyDataLoader

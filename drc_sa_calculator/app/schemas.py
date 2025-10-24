@@ -1,8 +1,9 @@
 """Pydantic schemas bridging HTTP/CLI interfaces with domain models."""
+
 from __future__ import annotations
 
+from collections.abc import Iterable, Mapping, Sequence
 from datetime import datetime
-from typing import Dict, Iterable, Mapping, Optional, Sequence
 
 from pydantic import BaseModel, Field, validator
 
@@ -13,16 +14,18 @@ class ExposureModel(BaseModel):
     trade_id: str
     notional: float
     currency: str
-    product_type: Optional[str] = None
-    exposure_class: Optional[str] = None
-    quality_step: Optional[str] = None
-    counterparty_grade: Optional[str] = None
-    lgd_grade: Optional[str] = None
-    hedging_set: Optional[str] = None
-    metadata: Dict[str, str] = Field(default_factory=dict)
+    product_type: str | None = None
+    exposure_class: str | None = None
+    quality_step: str | None = None
+    counterparty_grade: str | None = None
+    lgd_grade: str | None = None
+    hedging_set: str | None = None
+    metadata: dict[str, str] = Field(default_factory=dict)
 
     @validator("notional")
-    def validate_notional(cls, value: float) -> float:  # noqa: D401 - pydantic signature
+    def validate_notional(
+        cls, value: float
+    ) -> float:  # noqa: D401 - pydantic signature
         """Ensure notional is positive."""
 
         if value <= 0:
@@ -44,7 +47,9 @@ class ExposureModel(BaseModel):
         )
 
     @classmethod
-    def from_domain(cls, exposure: models.ExposureComputation) -> "ExposureModel":
+    def from_domain(
+        cls, exposure: models.ExposureComputation
+    ) -> ExposureModel:
         return cls(
             trade_id=exposure.trade_id,
             notional=exposure.notional,
@@ -55,10 +60,10 @@ class ExposureModel(BaseModel):
 
 class ScenarioModel(BaseModel):
     name: str
-    description: Optional[str] = None
+    description: str | None = None
     tags: Sequence[str] = Field(default_factory=tuple)
     exposures: Sequence[ExposureModel]
-    created_at: Optional[datetime] = None
+    created_at: datetime | None = None
 
     def to_domain(self) -> models.ScenarioDefinition:
         exposures = tuple(exposure.to_domain() for exposure in self.exposures)
@@ -72,19 +77,22 @@ class ScenarioModel(BaseModel):
         )
 
     @classmethod
-    def from_domain(cls, scenario: models.ScenarioDefinition) -> "ScenarioModel":
+    def from_domain(cls, scenario: models.ScenarioDefinition) -> ScenarioModel:
         return cls(
             name=scenario.name,
             description=scenario.description,
             tags=scenario.tags,
-            exposures=[ExposureModel(**exposure.__dict__) for exposure in scenario.exposures],
+            exposures=[
+                ExposureModel(**exposure.__dict__)
+                for exposure in scenario.exposures
+            ],
             created_at=scenario.created_at,
         )
 
 
 class ScenarioSummaryModel(BaseModel):
     name: str
-    description: Optional[str]
+    description: str | None
     created_at: datetime
     tags: Sequence[str]
 
@@ -106,7 +114,9 @@ class ComputationRequestModel(BaseModel):
         return models.ComputationRequest(
             policy=models.PolicySelection(name=self.policy_name),
             baseline=self.baseline.to_domain(),
-            scenarios=tuple(scenario.to_domain() for scenario in self.scenarios),
+            scenarios=tuple(
+                scenario.to_domain() for scenario in self.scenarios
+            ),
         )
 
 
@@ -116,11 +126,13 @@ class ExposureComputationModel(BaseModel):
     risk_weight: float
     capital_charge: float
     classification_path: Sequence[str]
-    lgd: Optional[float]
+    lgd: float | None
     metadata: Mapping[str, str]
 
     @classmethod
-    def from_domain(cls, exposure: models.ExposureComputation) -> "ExposureComputationModel":
+    def from_domain(
+        cls, exposure: models.ExposureComputation
+    ) -> ExposureComputationModel:
         return cls(
             trade_id=exposure.trade_id,
             notional=exposure.notional,
@@ -140,7 +152,7 @@ class ScenarioResultModel(BaseModel):
     exposures: Sequence[ExposureComputationModel]
 
     @classmethod
-    def from_domain(cls, result: models.ScenarioResult) -> "ScenarioResultModel":
+    def from_domain(cls, result: models.ScenarioResult) -> ScenarioResultModel:
         return cls(
             scenario_name=result.scenario_name,
             total_capital_charge=result.total_capital_charge,
@@ -160,14 +172,19 @@ class ComputationResultModel(BaseModel):
     generated_at: datetime
 
     @classmethod
-    def from_domain(cls, result: models.ComputationResult) -> "ComputationResultModel":
+    def from_domain(
+        cls, result: models.ComputationResult
+    ) -> ComputationResultModel:
         return cls(
             policy={
                 "name": result.policy.name,
                 "hashes": result.policy.dataset_hashes,
             },
             baseline=ScenarioResultModel.from_domain(result.baseline),
-            scenarios=[ScenarioResultModel.from_domain(item) for item in result.scenarios],
+            scenarios=[
+                ScenarioResultModel.from_domain(item)
+                for item in result.scenarios
+            ],
             generated_at=result.generated_at,
         )
 
@@ -178,7 +195,9 @@ class ScenarioComparisonModel(BaseModel):
     exposure_deltas: Mapping[str, float]
 
     @classmethod
-    def from_domain(cls, comparison: models.ScenarioComparison) -> "ScenarioComparisonModel":
+    def from_domain(
+        cls, comparison: models.ScenarioComparison
+    ) -> ScenarioComparisonModel:
         return cls(
             scenario_name=comparison.scenario.scenario_name,
             delta_total_charge=comparison.delta_total_charge,
@@ -188,14 +207,16 @@ class ScenarioComparisonModel(BaseModel):
 
 class ComputationResponseModel(BaseModel):
     result: ComputationResultModel
-    comparisons: Sequence[ScenarioComparisonModel] = Field(default_factory=list)
+    comparisons: Sequence[ScenarioComparisonModel] = Field(
+        default_factory=list
+    )
 
     @classmethod
     def from_domain(
         cls,
         result: models.ComputationResult,
         comparisons: Iterable[models.ScenarioComparison],
-    ) -> "ComputationResponseModel":
+    ) -> ComputationResponseModel:
         return cls(
             result=ComputationResultModel.from_domain(result),
             comparisons=[

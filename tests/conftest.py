@@ -1,18 +1,23 @@
 """Shared pytest fixtures for the DRCSA simulator test-suite."""
+
 from __future__ import annotations
 
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable, Tuple
 
 import pytest
-
-from drc_sa_calculator.domain.engine import DRCSACalculationEngine, PolicyDataLoader
+from drc_sa_calculator.domain.engine import (
+    DRCSACalculationEngine,
+    PolicyDataLoader,
+)
 from drc_sa_calculator.domain.models import Exposure, ScenarioDefinition
 
 
 @pytest.fixture(scope="session")
 def policy_loader() -> PolicyDataLoader:
-    base_path = Path(__file__).resolve().parents[1] / "drc_sa_calculator" / "regdata"
+    base_path = (
+        Path(__file__).resolve().parents[1] / "drc_sa_calculator" / "regdata"
+    )
     return PolicyDataLoader(base_path=base_path)
 
 
@@ -22,12 +27,14 @@ def policy_data(policy_loader: PolicyDataLoader):
 
 
 @pytest.fixture(scope="session")
-def calculation_engine(policy_loader: PolicyDataLoader) -> DRCSACalculationEngine:
+def calculation_engine(
+    policy_loader: PolicyDataLoader,
+) -> DRCSACalculationEngine:
     return DRCSACalculationEngine(policy_loader)
 
 
 @pytest.fixture
-def baseline_exposures() -> Tuple[Exposure, ...]:
+def baseline_exposures() -> tuple[Exposure, ...]:
     return (
         Exposure(
             trade_id="T1",
@@ -51,7 +58,9 @@ def baseline_exposures() -> Tuple[Exposure, ...]:
 
 
 @pytest.fixture
-def stress_exposures(baseline_exposures: Tuple[Exposure, ...]) -> Tuple[Exposure, ...]:
+def stress_exposures(
+    baseline_exposures: tuple[Exposure, ...],
+) -> tuple[Exposure, ...]:
     baseline, bank = baseline_exposures
     stressed_bank = Exposure(
         trade_id=bank.trade_id,
@@ -68,7 +77,9 @@ def stress_exposures(baseline_exposures: Tuple[Exposure, ...]) -> Tuple[Exposure
 
 
 @pytest.fixture
-def baseline_scenario(baseline_exposures: Tuple[Exposure, ...]) -> ScenarioDefinition:
+def baseline_scenario(
+    baseline_exposures: tuple[Exposure, ...],
+) -> ScenarioDefinition:
     return ScenarioDefinition(
         name="baseline",
         description="Baseline sovereign and bank mix",
@@ -78,7 +89,9 @@ def baseline_scenario(baseline_exposures: Tuple[Exposure, ...]) -> ScenarioDefin
 
 
 @pytest.fixture
-def stress_scenario(stress_exposures: Tuple[Exposure, ...]) -> ScenarioDefinition:
+def stress_scenario(
+    stress_exposures: tuple[Exposure, ...],
+) -> ScenarioDefinition:
     return ScenarioDefinition(
         name="stress",
         description="Counterparty downgrade stress",

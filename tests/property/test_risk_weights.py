@@ -1,22 +1,22 @@
 from __future__ import annotations
 
-from typing import List, Tuple
-
 import pytest
-from hypothesis import given, strategies as st
-
 from drc_sa_calculator.domain.models import (
     ComputationRequest,
     Exposure,
     PolicySelection,
     ScenarioDefinition,
 )
+from hypothesis import given
+from hypothesis import strategies as st
 
 pytestmark = pytest.mark.property
 
 
-def _flatten_risk_weights(node: dict, prefix: Tuple[str, ...] = ()) -> List[Tuple[Tuple[str, ...], float]]:
-    results: List[Tuple[Tuple[str, ...], float]] = []
+def _flatten_risk_weights(
+    node: dict, prefix: tuple[str, ...] = ()
+) -> list[tuple[tuple[str, ...], float]]:
+    results: list[tuple[tuple[str, ...], float]] = []
     for key, value in node.items():
         new_prefix = prefix + (key,)
         if isinstance(value, dict):
@@ -27,7 +27,7 @@ def _flatten_risk_weights(node: dict, prefix: Tuple[str, ...] = ()) -> List[Tupl
 
 
 @pytest.fixture(scope="session")
-def risk_weight_cases(policy_loader) -> List[Tuple[Tuple[str, ...], float]]:
+def risk_weight_cases(policy_loader) -> list[tuple[tuple[str, ...], float]]:
     policy = policy_loader.load("BCBS_MAR")
     exposures = policy.risk_weights["exposures"]
     return _flatten_risk_weights(exposures)
@@ -35,7 +35,9 @@ def risk_weight_cases(policy_loader) -> List[Tuple[Tuple[str, ...], float]]:
 
 @given(st.data())
 def test_resolved_risk_weights_match_policy(
-    calculation_engine, risk_weight_cases: List[Tuple[Tuple[str, ...], float]], data
+    calculation_engine,
+    risk_weight_cases: list[tuple[tuple[str, ...], float]],
+    data,
 ) -> None:
     path, expected = data.draw(st.sampled_from(risk_weight_cases))
     exposure_class = path[0]
@@ -48,8 +50,12 @@ def test_resolved_risk_weights_match_policy(
         exposure_class=exposure_class,
         quality_step=quality or None,
     )
-    scenario = ScenarioDefinition(name="prop", description=None, exposures=(exposure,))
-    request = ComputationRequest(policy=PolicySelection("BCBS_MAR"), baseline=scenario)
+    scenario = ScenarioDefinition(
+        name="prop", description=None, exposures=(exposure,)
+    )
+    request = ComputationRequest(
+        policy=PolicySelection("BCBS_MAR"), baseline=scenario
+    )
     result = calculation_engine.compute(request)
     resolved = result.baseline.exposures[0].risk_weight
     assert resolved == pytest.approx(expected)
