@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import pytest
-
 from drc_sa_calculator.domain.models import (
     ComputationRequest,
     PolicySelection,

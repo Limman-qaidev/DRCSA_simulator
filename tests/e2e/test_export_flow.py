@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING, Any
 
 import pytest
 import uvicorn
-
 from drc_sa_calculator.app.dependencies import get_scenario_store
 from drc_sa_calculator.app.main import create_app
 

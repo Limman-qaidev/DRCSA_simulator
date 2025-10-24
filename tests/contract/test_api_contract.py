@@ -5,7 +5,6 @@ from typing import Any
 
 import pytest
 import schemathesis
-
 from drc_sa_calculator.app.main import create_app
 
 pytestmark = pytest.mark.contract

@@ -1,12 +1,10 @@
 """Shared pytest fixtures for the DRCSA simulator test-suite."""
-
 from __future__ import annotations
 
 from collections.abc import Iterable
 from pathlib import Path
 
 import pytest
-
 from drc_sa_calculator.domain.engine import (
     DRCSACalculationEngine,
     PolicyDataLoader,
