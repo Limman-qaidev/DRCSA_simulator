@@ -23,6 +23,16 @@ drcsa = "drc_sa_calculator.cli:app"
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools.packages.find]
+include = ["drc_sa_calculator*"]
+exclude = [
+    "tests*",
+    "hypothesis*",
+    "schemathesis*",
+    "uvicorn*",
+    "yaml*",
+]
+
 [tool.black]
 line-length = 79
 target-version = ["py310"]
